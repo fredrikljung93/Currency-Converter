@@ -3,7 +3,6 @@ package com.example.currencyconverter;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -15,14 +14,11 @@ public class XMLParser {
 	public static ArrayList<Currency> getCurrencies(File file){
 		ArrayList<Currency> newCurrencies=new ArrayList<Currency>();
 		BufferedReader reader = null;
-		try {
-			reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
-		} catch (FileNotFoundException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+		FileInputStream fis = null;
 		String line = null;
 		try {
+			fis=new FileInputStream(file);
+			reader = new BufferedReader(new InputStreamReader(fis));
 			line=reader.readLine();
 			while(line!=null){
 				if(line.toUpperCase().contains("CUBE CURRENCY")){
@@ -39,7 +35,14 @@ public class XMLParser {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+		finally{
+			try {
+				fis.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		newCurrencies.add(new Currency("EUR", 1));
 		return newCurrencies;
 		

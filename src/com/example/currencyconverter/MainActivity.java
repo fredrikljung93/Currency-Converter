@@ -1,12 +1,9 @@
 package com.example.currencyconverter;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -15,14 +12,16 @@ import java.util.List;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -35,12 +34,23 @@ public class MainActivity extends Activity {
 	private EditText fromInput;
 	private TextView resultView;
 
+	private DownloadXML downloadTask;
+
 	private ArrayAdapter<Currency> adapter;
+
+	private SharedPreferences sharedPrefs;
+	@Override
+	protected void onStop() {
+		super.onStop();
+		//downloadTask.cancel(true);
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		
+		sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
 		this.fromInput = (EditText) findViewById(R.id.editText1);
 
@@ -56,9 +66,34 @@ public class MainActivity extends Activity {
 		this.fromSpinner.setAdapter(adapter);
 		this.toSpinner.setAdapter(adapter);
 
-		DownloadXML task = new DownloadXML(
-				"http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml");
-		task.execute();
+		File file = new File(getFilesDir(), "XML");
+		long daysSinceUpdate = (System.currentTimeMillis() - file
+				.lastModified()) / (1000 * 60 * 60*24);
+		Log.d("Hours since update", daysSinceUpdate + "");
+		String syncfreqstring=sharedPrefs.getString("prefSyncFrequency", "1");
+		long syncfreq=Long.parseLong(syncfreqstring);
+		if(syncfreq==-1){
+			syncfreq=Long.MAX_VALUE;
+		}
+		if (!file.exists() || daysSinceUpdate >= syncfreq){
+			Log.d("downloadTask.execute","File didnt exists or file is old");
+			downloadTask = new DownloadXML(
+					"http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml");
+			downloadTask.execute();
+		} else {
+			Log.d("onStart", "Using old data");
+			updateAdapters();
+		}
+	}
+
+	public void updateAdapters() {
+		File file = new File(getFilesDir(), "XML");
+		List<Currency> spinnerArray = XMLParser.getCurrencies(file);
+		adapter = new ArrayAdapter<Currency>(MainActivity.this,
+				android.R.layout.simple_spinner_item, spinnerArray);
+
+		fromSpinner.setAdapter(adapter);
+		toSpinner.setAdapter(adapter);
 	}
 
 	public void convertButtonClick(View view) {
@@ -83,7 +118,14 @@ public class MainActivity extends Activity {
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
 		if (id == R.id.action_settings) {
-			return true;
+			Intent settings = new Intent(this, SettingsActivity.class);
+			startActivity(settings);
+		} else if (id == R.id.action_updaterates) {
+			String syncfreq=sharedPrefs.getString("prefSyncFrequency", "1");
+			Log.d("Update rates", syncfreq);
+			downloadTask = new DownloadXML(
+					"http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml");
+			downloadTask.execute();
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -104,12 +146,12 @@ public class MainActivity extends Activity {
 		@Override
 		protected Void doInBackground(Void... params) {
 			try {
-				File file = new File(getFilesDir(), "XML");
-				FileOutputStream fileOutput = new FileOutputStream(file);
 				URL url = new URL(urlstring);
 				HttpURLConnection connection = (HttpURLConnection) url
 						.openConnection();
-				InputStream is =connection.getInputStream();
+				InputStream is = connection.getInputStream();
+				File file = new File(getFilesDir(), "XML");
+				FileOutputStream fileOutput = new FileOutputStream(file);
 
 				int totalSize = connection.getContentLength();
 				int downloadedSize = 0;
@@ -119,7 +161,7 @@ public class MainActivity extends Activity {
 				while ((bufferLength = is.read(buffer)) > 0) {
 					fileOutput.write(buffer, 0, bufferLength);
 					downloadedSize += bufferLength;
-					progress.setProgress(bufferLength/totalSize);
+					progress.setProgress(bufferLength / totalSize);
 				}
 				fileOutput.close();
 
@@ -133,7 +175,8 @@ public class MainActivity extends Activity {
 					public void run() {
 						Toast.makeText(
 								MainActivity.this.getApplicationContext(),
-								"Network failure", Toast.LENGTH_LONG).show();
+								"Network failure, using old data",
+								Toast.LENGTH_LONG).show();
 
 					}
 				});
@@ -149,13 +192,7 @@ public class MainActivity extends Activity {
 			progress.dismiss();
 			Log.d("ONPOSTEXECUTE", "ONPOSTEXECUTE");
 			Log.d("XML", "Size: " + newCurrencies.size());
-			File file = new File(getFilesDir(), "XML");
-			List<Currency> spinnerArray = XMLParser.getCurrencies(file);
-			adapter = new ArrayAdapter<Currency>(MainActivity.this,
-					android.R.layout.simple_spinner_item, spinnerArray);
-
-			fromSpinner.setAdapter(adapter);
-			toSpinner.setAdapter(adapter);
+			updateAdapters();
 		}
 	}
 }
