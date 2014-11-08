@@ -17,7 +17,6 @@ public class MainActivity extends Activity {
 	private Spinner toSpinner;
 	private EditText fromInput;
 	private EditText toInput;
-
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);

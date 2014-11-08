@@ -3,18 +3,18 @@ package com.example.currencyconverter;
 
 public class Currency {
 	
-	private float value;
+	private float rate;
 	private String name;
 	
-	public Currency(String name, float value){
+	public Currency(String name, float rate){
 		this.name=name;
-		this.value=value;
+		this.rate=rate;
 	}
-	public float getValue() {
-		return value;
+	public float getRate() {
+		return rate;
 	}
-	public void setValue(float value) {
-		this.value = value;
+	public void setrate(float rate) {
+		this.rate = rate;
 	}
 	public String getName() {
 		return name;
