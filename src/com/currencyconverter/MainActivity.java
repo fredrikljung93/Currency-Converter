@@ -101,9 +101,15 @@ public class MainActivity extends Activity {
 	public void convertButtonClick(View view) {
 		Currency from = (Currency) fromSpinner.getSelectedItem();
 		Currency to = (Currency) toSpinner.getSelectedItem();
-		float fromInEURO = Float.parseFloat(fromInput.getText().toString())
-				/ from.getRate();
-		resultView.setText(fromInEURO * to.getRate() + "");
+		
+		try{
+			float fromInEURO = Float.parseFloat(fromInput.getText().toString())
+					/ from.getRate();
+			resultView.setText(fromInEURO * to.getRate() + "");
+		}
+		catch(NumberFormatException ne){
+			resultView.setText("");
+		}
 	}
 
 	@Override
