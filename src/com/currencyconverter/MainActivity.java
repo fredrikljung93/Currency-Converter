@@ -1,4 +1,4 @@
-package com.example.currencyconverter;
+package com.currencyconverter;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -9,6 +9,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.example.currencyconverter.R;
 
 import android.app.Activity;
 import android.app.ProgressDialog;

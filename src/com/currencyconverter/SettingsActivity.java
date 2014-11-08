@@ -1,4 +1,6 @@
-package com.example.currencyconverter;
+package com.currencyconverter;
+
+import com.example.currencyconverter.R;
 
 import android.os.Bundle;
 import android.preference.PreferenceActivity;

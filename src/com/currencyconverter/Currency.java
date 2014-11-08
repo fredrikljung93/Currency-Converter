@@ -1,4 +1,4 @@
-package com.example.currencyconverter;
+package com.currencyconverter;
 
 
 public class Currency {
