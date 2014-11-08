@@ -14,7 +14,7 @@
         android:id="@+id/textView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="From:"
+          android:text="From:"
         android:textSize="30sp" />
 
     <LinearLayout
@@ -34,9 +34,8 @@
 
         <Spinner
             android:id="@+id/spinner1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            android:layout_width="100dp"
+            android:layout_height="wrap_content" />
 
     </LinearLayout>
     
@@ -51,23 +50,24 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
 
-        <EditText
-            android:id="@+id/editText2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:ems="10"
-            android:inputType="numberDecimal" >
-
-            <requestFocus />
-        </EditText>
-
-        <Spinner
-            android:id="@+id/spinner2"
+        <TextView
+            android:id="@+id/textView3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1" />
 
+        <Spinner
+            android:id="@+id/spinner2"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content" />
+
     </LinearLayout>
+
+    <Button
+        android:id="@+id/button1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="convertButtonClick"
+        android:text="Convert" />
 
 </LinearLayout>
