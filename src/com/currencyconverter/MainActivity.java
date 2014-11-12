@@ -10,6 +10,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.xmlpull.v1.XmlPullParserException;
+
 import com.example.currencyconverter.R;
 
 import android.app.Activity;
@@ -84,11 +86,19 @@ public class MainActivity extends Activity {
 			downloadTask.execute();
 		} else {
 			Log.d("onStart", "Using old data");
-			updateAdapters();
+			try {
+				updateAdapters();
+			} catch (XmlPullParserException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 
-	public void updateAdapters() {
+	public void updateAdapters() throws XmlPullParserException, IOException {
 		File file = new File(getFilesDir(), "XML");
 		List<Currency> spinnerArray = XMLParser.getCurrencies(file);
 		adapter = new ArrayAdapter<Currency>(MainActivity.this,
@@ -200,7 +210,15 @@ public class MainActivity extends Activity {
 			progress.dismiss();
 			Log.d("ONPOSTEXECUTE", "ONPOSTEXECUTE");
 			Log.d("XML", "Size: " + newCurrencies.size());
-			updateAdapters();
+			try {
+				updateAdapters();
+			} catch (XmlPullParserException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 }

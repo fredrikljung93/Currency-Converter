@@ -1,50 +1,68 @@
 package com.currencyconverter;
 
-import java.io.BufferedReader;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.InputStream;
 import java.util.ArrayList;
+
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
 
 import android.util.Log;
 
 public class XMLParser {
-	
-	public static ArrayList<Currency> getCurrencies(File file){
-		ArrayList<Currency> newCurrencies=new ArrayList<Currency>();
-		BufferedReader reader = null;
-		FileInputStream fis = null;
-		String line = null;
+
+	public static ArrayList<Currency> getCurrencies(File file)
+			throws XmlPullParserException, IOException {
+		ArrayList<Currency> currencies = new ArrayList<Currency>();
+		XmlPullParser parser;
+		parser = XmlPullParserFactory.newInstance().newPullParser();
 		try {
-			fis=new FileInputStream(file);
-			reader = new BufferedReader(new InputStreamReader(fis));
-			line=reader.readLine();
-			while(line!=null){
-				if(line.toUpperCase().contains("CUBE CURRENCY")){
-					String[] strings = line.split("'");
-					newCurrencies.add(new Currency(strings[1],Float.parseFloat(strings[3])));
-					Log.d("New Currency", strings[1]+", "+strings[3]);
-				}
-				else{
-					Log.d("XML not wanted line", line);
-				}
-				line=reader.readLine();//Read next line
-			}
-		} catch (IOException e) {
+			parser.setInput(new FileInputStream(file), null);
+		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		finally{
-			try {
-				fis.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+
+		int parseEvent = parser.getEventType();
+		while (parseEvent != XmlPullParser.END_DOCUMENT) {
+			switch (parseEvent) {
+			case XmlPullParser.START_TAG:
+				String tagName = parser.getName();
+				if (tagName.equalsIgnoreCase("cube")) {
+
+					Currency currency = parseItem(parser);
+					if (currency != null) {
+						currencies.add(currency);
+					}
+				}
+			default:
+				break;
 			}
+			
+			parseEvent = parser.next();
 		}
-		newCurrencies.add(new Currency("EUR", 1));
-		return newCurrencies;
+		return currencies;
+	}
+
+	private static Currency parseItem(XmlPullParser parser)
+			throws XmlPullParserException, IOException {
+		
+		String name=parser.getName();
+		if(name.equalsIgnoreCase("cube")){
+			String currency = parser.getAttributeValue(null, "currency");
+			String ratestring=parser.getAttributeValue(null, "rate");
+			if(currency==null){return null;}
+			if(ratestring==null){return null;}
+			Float rate = Float.parseFloat(ratestring);
+			Log.d("NEW CURRENCY", currency+", "+rate);
+			return new Currency(currency, rate);
+		}
+		return null;
 		
 	}
 
