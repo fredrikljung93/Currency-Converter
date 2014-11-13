@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Valutaomvandlare</string>
+    <string name="action_settings">Inställningar</string>
+    
+    <string name="convert">Omvandla</string>
+    <string name="tocolon">Till:</string>
+    <string name="fromcolon">Från:</string>
+    <string name="update">Uppdatera valutakurser</string>
+    
+    <string name="updatefrequency">Uppdateringsfrekvens</string>
+    <string name="downloading">Laddar ned valutakurser</string>
+         <string name="networkfailure">Nätverksfel, använder gammal data</string>
+	<string name="updatefrequencyinfo">Justera hur ofta valutakurser ska uppdateras</string>
+
+</resources>

@@ -12,6 +12,6 @@
         android:id="@+id/action_updaterates"
         android:orderInCategory="100"
         android:showAsAction="never"
-        android:title="Update currency rates"/>
+        android:title="@string/update"/>
 
 </menu>

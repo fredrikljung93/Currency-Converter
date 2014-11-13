@@ -12,8 +12,8 @@
         <ListPreference
             android:key="prefSyncFrequency"
             android:entries="@array/syncFrequency"
-            android:summary="Adjust how often to automatically update currency rates"
+            android:summary="@string/updatefrequencyinfo"
             android:entryValues="@array/syncFrequencyValues"
-            android:title="Update frequency" />
+            android:title="@string/updatefrequency"/>
 
 </PreferenceScreen>

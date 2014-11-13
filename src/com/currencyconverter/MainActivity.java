@@ -32,6 +32,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
+	
+	private static final String XMLURL="http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml";
 
 	private Spinner fromSpinner;
 	private Spinner toSpinner;
@@ -81,8 +83,7 @@ public class MainActivity extends Activity {
 		}
 		if (!file.exists() || daysSinceUpdate >= syncfreq){
 			Log.d("downloadTask.execute","File didnt exists or file is old");
-			downloadTask = new DownloadXML(
-					"http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml");
+			downloadTask = new DownloadXML(XMLURL);
 			downloadTask.execute();
 		} else {
 			Log.d("onStart", "Using old data");
@@ -141,8 +142,7 @@ public class MainActivity extends Activity {
 		} else if (id == R.id.action_updaterates) {
 			String syncfreq=sharedPrefs.getString("prefSyncFrequency", "1");
 			Log.d("Update rates", syncfreq);
-			downloadTask = new DownloadXML(
-					"http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml");
+			downloadTask = new DownloadXML(XMLURL);
 			downloadTask.execute();
 		}
 		return super.onOptionsItemSelected(item);
@@ -155,7 +155,7 @@ public class MainActivity extends Activity {
 
 		public DownloadXML(String urlstring) {
 			this.progress = new ProgressDialog(MainActivity.this);
-			progress.setTitle("Downloading currencies");
+			progress.setTitle(R.string.downloading);
 			progress.show();
 			this.urlstring = urlstring;
 			newCurrencies = new ArrayList<Currency>();
@@ -179,7 +179,7 @@ public class MainActivity extends Activity {
 				while ((bufferLength = is.read(buffer)) > 0) {
 					fileOutput.write(buffer, 0, bufferLength);
 					downloadedSize += bufferLength;
-					progress.setProgress(bufferLength / totalSize);
+					progress.setProgress(downloadedSize / totalSize);
 				}
 				fileOutput.close();
 
@@ -193,7 +193,7 @@ public class MainActivity extends Activity {
 					public void run() {
 						Toast.makeText(
 								MainActivity.this.getApplicationContext(),
-								"Network failure, using old data",
+								R.string.networkfailure,
 								Toast.LENGTH_LONG).show();
 
 					}

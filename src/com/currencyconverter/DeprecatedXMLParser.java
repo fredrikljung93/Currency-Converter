@@ -7,11 +7,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
+import android.annotation.SuppressLint;
 import android.util.Log;
 
 public class DeprecatedXMLParser {
 	
-	public static ArrayList<Currency> getCurrencies(File file){
+	@SuppressLint("DefaultLocale") public static ArrayList<Currency> getCurrencies(File file){
 		ArrayList<Currency> newCurrencies=new ArrayList<Currency>();
 		BufferedReader reader = null;
 		FileInputStream fis = null;

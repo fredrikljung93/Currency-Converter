@@ -8,7 +8,7 @@
 
     <uses-sdk
         android:minSdkVersion="16"
-        android:targetSdkVersion="18" />
+        android:targetSdkVersion="21" />
 
     <application
         android:allowBackup="true"
@@ -26,7 +26,7 @@
         </activity>
         <activity
             android:name="com.currencyconverter.SettingsActivity"
-            android:label="@string/title_activity_settings" >
+            android:label="@string/action_settings" >
         </activity>
     </application>
 

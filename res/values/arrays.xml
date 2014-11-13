@@ -5,7 +5,7 @@
         <item name="1">Once a day</item>
         <item name="7">Once a week</item>
         <item name="30">Once a month</item>
-        <item name="X">Never (Update maually)</item>
+        <item name="X">Never (Update manually)</item>
     </string-array>
     <string-array name="syncFrequencyValues">
         <item name="0">0</item>

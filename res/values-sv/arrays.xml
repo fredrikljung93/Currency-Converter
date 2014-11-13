@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="syncFrequency">
+      	<item name="0">Uppdatera alltid</item>
+        <item name="1">Varje dag</item>
+        <item name="7">Varje vecka</item>
+        <item name="30">Varje månad</item>
+        <item name="X">Aldrig (Uppdatera manuellt)</item>
+    </string-array>
+     
+</resources>
