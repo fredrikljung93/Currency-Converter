@@ -5,6 +5,7 @@
     <string name="action_settings">Inställningar</string>
     
     <string name="convert">Omvandla</string>
+    <string name="flip">Vänd</string>
     <string name="tocolon">Till:</string>
     <string name="fromcolon">Från:</string>
     <string name="update">Uppdatera valutakurser</string>

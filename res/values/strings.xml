@@ -5,6 +5,7 @@
     <string name="action_settings">Settings</string>
     
     <string name="convert">Convert</string>
+      <string name="flip">Flip</string>
     <string name="tocolon">To:</string>
     <string name="fromcolon">From:</string>
     <string name="update">Update currency rates</string>

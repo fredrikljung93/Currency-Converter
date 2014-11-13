@@ -137,7 +137,7 @@ public class MainActivity extends Activity {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		downloadTask.cancel(true);
+	//	downloadTask.cancel(true);
 	}
 
 	public void updateAdapters() throws XmlPullParserException, IOException {
@@ -154,12 +154,20 @@ public class MainActivity extends Activity {
 		Currency to = (Currency) toSpinner.getSelectedItem();
 
 		try {
-			float fromInEURO = Float.parseFloat(fromInput.getText().toString())
+			double fromInEURO = Double.parseDouble(fromInput.getText().toString())
 					/ from.getRate();
 			resultEditText.setText(fromInEURO * to.getRate() + "");
 		} catch (NumberFormatException ne) {
 			resultEditText.setText("");
 		}
+	}
+	public void flipButtonClick(View view) {
+		int fromPosition = fromSpinner.getSelectedItemPosition();
+		int toPosition = toSpinner.getSelectedItemPosition();
+		fromInput.setText(resultEditText.getText());
+		fromSpinner.setSelection(toPosition);
+		toSpinner.setSelection(fromPosition);
+		convertButtonClick(view); // Trigger new conversion
 	}
 
 	@Override

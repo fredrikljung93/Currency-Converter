@@ -3,17 +3,17 @@ package com.currencyconverter;
 
 public class Currency {
 	
-	private float rate;
+	private double rate;
 	private String name;
 	
-	public Currency(String name, float rate){
+	public Currency(String name, double rate){
 		this.name=name;
 		this.rate=rate;
 	}
-	public float getRate() {
+	public double getRate() {
 		return rate;
 	}
-	public void setrate(float rate) {
+	public void setrate(double rate) {
 		this.rate = rate;
 	}
 	public String getName() {

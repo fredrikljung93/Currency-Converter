@@ -56,7 +56,7 @@ public class XMLParser {
 			String ratestring=parser.getAttributeValue(null, "rate");
 			if(currency==null){return null;}
 			if(ratestring==null){return null;}
-			Float rate = Float.parseFloat(ratestring);
+			Double rate = Double.parseDouble(ratestring);
 			Log.d("NEW CURRENCY", currency+", "+rate);
 			return new Currency(currency, rate);
 		}
