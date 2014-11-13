@@ -16,6 +16,8 @@ import com.example.currencyconverter.R;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -27,37 +29,38 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
+import android.view.View.OnLongClickListener;
 
 public class MainActivity extends Activity {
-	
-	private static final String XMLURL="http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml";
+
+	private static final String XMLURL = "http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml";
 
 	private Spinner fromSpinner;
 	private Spinner toSpinner;
 	private EditText fromInput;
-	private TextView resultView;
+	private EditText resultEditText;
 
+	private ClipboardManager clipboard;
 	private DownloadXML downloadTask;
 
 	private CurrencyAdapter adapter;
 
 	private SharedPreferences sharedPrefs;
+
 	@Override
 	protected void onStop() {
 		super.onStop();
-		//downloadTask.cancel(true);
+		// downloadTask.cancel(true);
 	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		
+		clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
 		sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
 		this.fromInput = (EditText) findViewById(R.id.editText1);
@@ -65,26 +68,39 @@ public class MainActivity extends Activity {
 		this.fromSpinner = (Spinner) findViewById(R.id.spinner1);
 		this.toSpinner = (Spinner) findViewById(R.id.spinner2);
 
-		this.resultView = (TextView) findViewById(R.id.textView3);
+		this.resultEditText = (EditText) findViewById(R.id.editText2);
+		resultEditText.setOnLongClickListener(new OnLongClickListener() {
+
+			@Override
+			public boolean onLongClick(View v) {
+				clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+				ClipData clip = ClipData.newPlainText("currency",
+						resultEditText.getText().toString());
+				clipboard.setPrimaryClip(clip);
+				Toast.makeText(getApplicationContext(), "Successfully copied",
+						Toast.LENGTH_SHORT).show();
+				return false;
+			}
+		});
 
 		List<Currency> spinnerArray = new ArrayList<Currency>();
 		adapter = new CurrencyAdapter(getApplicationContext(), spinnerArray);
-		
-		OnItemSelectedListener oisl=new OnItemSelectedListener() {
+
+		OnItemSelectedListener oisl = new OnItemSelectedListener() {
 
 			@Override
 			public void onItemSelected(AdapterView<?> parent, View view,
 					int position, long id) {
 				convertButtonClick(null);
-				
+
 			}
 
 			@Override
 			public void onNothingSelected(AdapterView<?> parent) {
-				
+
 			}
 		};
-		
+
 		this.fromSpinner.setOnItemSelectedListener(oisl);
 		this.toSpinner.setOnItemSelectedListener(oisl);
 
@@ -93,15 +109,15 @@ public class MainActivity extends Activity {
 
 		File file = new File(getFilesDir(), "XML");
 		long daysSinceUpdate = (System.currentTimeMillis() - file
-				.lastModified()) / (1000 * 60 * 60*24);
+				.lastModified()) / (1000 * 60 * 60 * 24);
 		Log.d("Hours since update", daysSinceUpdate + "");
-		String syncfreqstring=sharedPrefs.getString("prefSyncFrequency", "1");
-		long syncfreq=Long.parseLong(syncfreqstring);
-		if(syncfreq==-1){
-			syncfreq=Long.MAX_VALUE;
+		String syncfreqstring = sharedPrefs.getString("prefSyncFrequency", "1");
+		long syncfreq = Long.parseLong(syncfreqstring);
+		if (syncfreq == -1) {
+			syncfreq = Long.MAX_VALUE;
 		}
-		if (!file.exists() || daysSinceUpdate >= syncfreq){
-			Log.d("downloadTask.execute","File didnt exists or file is old");
+		if (!file.exists() || daysSinceUpdate >= syncfreq) {
+			Log.d("downloadTask.execute", "File didnt exists or file is old");
 			downloadTask = new DownloadXML(XMLURL);
 			downloadTask.execute();
 		} else {
@@ -118,6 +134,12 @@ public class MainActivity extends Activity {
 		}
 	}
 
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		downloadTask.cancel(true);
+	}
+
 	public void updateAdapters() throws XmlPullParserException, IOException {
 		File file = new File(getFilesDir(), "XML");
 		List<Currency> spinnerArray = XMLParser.getCurrencies(file);
@@ -130,14 +152,13 @@ public class MainActivity extends Activity {
 	public void convertButtonClick(View view) {
 		Currency from = (Currency) fromSpinner.getSelectedItem();
 		Currency to = (Currency) toSpinner.getSelectedItem();
-		
-		try{
+
+		try {
 			float fromInEURO = Float.parseFloat(fromInput.getText().toString())
 					/ from.getRate();
-			resultView.setText(fromInEURO * to.getRate() + "");
-		}
-		catch(NumberFormatException ne){
-			resultView.setText("");
+			resultEditText.setText(fromInEURO * to.getRate() + "");
+		} catch (NumberFormatException ne) {
+			resultEditText.setText("");
 		}
 	}
 
@@ -158,7 +179,7 @@ public class MainActivity extends Activity {
 			Intent settings = new Intent(this, SettingsActivity.class);
 			startActivity(settings);
 		} else if (id == R.id.action_updaterates) {
-			String syncfreq=sharedPrefs.getString("prefSyncFrequency", "1");
+			String syncfreq = sharedPrefs.getString("prefSyncFrequency", "1");
 			Log.d("Update rates", syncfreq);
 			downloadTask = new DownloadXML(XMLURL);
 			downloadTask.execute();
@@ -211,8 +232,8 @@ public class MainActivity extends Activity {
 					public void run() {
 						Toast.makeText(
 								MainActivity.this.getApplicationContext(),
-								R.string.networkfailure,
-								Toast.LENGTH_LONG).show();
+								R.string.networkfailure, Toast.LENGTH_LONG)
+								.show();
 
 					}
 				});

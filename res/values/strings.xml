@@ -9,6 +9,8 @@
     <string name="fromcolon">From:</string>
     <string name="update">Update currency rates</string>
     
+    <string name="copysuccess">Copied value to clipboard</string>
+    
     <string name="updatefrequency">Update frequency</string>
     <string name="downloading">Downloading currencies</string>
      <string name="networkfailure">Network failure, using old data</string>

@@ -9,6 +9,8 @@
     <string name="fromcolon">Från:</string>
     <string name="update">Uppdatera valutakurser</string>
     
+    <string name="copysuccess">Kopierade värdet till urklipp</string>
+    
     <string name="updatefrequency">Uppdateringsfrekvens</string>
     <string name="downloading">Laddar ned valutakurser</string>
          <string name="networkfailure">Nätverksfel, använder gammal data</string>
