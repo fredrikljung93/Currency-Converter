@@ -25,6 +25,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -68,6 +70,24 @@ public class MainActivity extends Activity {
 		List<Currency> spinnerArray = new ArrayList<Currency>();
 		adapter = new ArrayAdapter<Currency>(this,
 				android.R.layout.simple_spinner_item, spinnerArray);
+		
+		OnItemSelectedListener oisl=new OnItemSelectedListener() {
+
+			@Override
+			public void onItemSelected(AdapterView<?> parent, View view,
+					int position, long id) {
+				convertButtonClick(null);
+				
+			}
+
+			@Override
+			public void onNothingSelected(AdapterView<?> parent) {
+				
+			}
+		};
+		
+		this.fromSpinner.setOnItemSelectedListener(oisl);
+		this.toSpinner.setOnItemSelectedListener(oisl);
 
 		this.fromSpinner.setAdapter(adapter);
 		this.toSpinner.setAdapter(adapter);
