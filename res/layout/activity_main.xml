@@ -36,7 +36,6 @@
             android:id="@+id/spinner1"
             android:layout_width="100dp"
             android:layout_height="wrap_content" />
-
     </LinearLayout>
     
       <TextView

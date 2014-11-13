@@ -44,7 +44,7 @@ public class MainActivity extends Activity {
 
 	private DownloadXML downloadTask;
 
-	private ArrayAdapter<Currency> adapter;
+	private CurrencyAdapter adapter;
 
 	private SharedPreferences sharedPrefs;
 	@Override
@@ -68,8 +68,7 @@ public class MainActivity extends Activity {
 		this.resultView = (TextView) findViewById(R.id.textView3);
 
 		List<Currency> spinnerArray = new ArrayList<Currency>();
-		adapter = new ArrayAdapter<Currency>(this,
-				android.R.layout.simple_spinner_item, spinnerArray);
+		adapter = new CurrencyAdapter(getApplicationContext(), spinnerArray);
 		
 		OnItemSelectedListener oisl=new OnItemSelectedListener() {
 
@@ -122,8 +121,7 @@ public class MainActivity extends Activity {
 	public void updateAdapters() throws XmlPullParserException, IOException {
 		File file = new File(getFilesDir(), "XML");
 		List<Currency> spinnerArray = XMLParser.getCurrencies(file);
-		adapter = new ArrayAdapter<Currency>(MainActivity.this,
-				android.R.layout.simple_spinner_item, spinnerArray);
+		adapter = new CurrencyAdapter(getApplicationContext(), spinnerArray);
 
 		fromSpinner.setAdapter(adapter);
 		toSpinner.setAdapter(adapter);
