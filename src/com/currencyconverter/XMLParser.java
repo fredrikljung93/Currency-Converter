@@ -44,6 +44,7 @@ public class XMLParser {
 			
 			parseEvent = parser.next();
 		}
+		currencies.add(new Currency("EUR", 1));
 		return currencies;
 	}
 

@@ -70,23 +70,13 @@
             android:layout_height="wrap_content" />
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/linearlayoutbuttons"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" >
 
-        <Button
-            android:id="@+id/button1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="convertButtonClick"
-            android:text="@string/convert" />
-          <Button
-            android:id="@+id/button2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="flipButtonClick"
-            android:text="@string/flip" />
-    </LinearLayout>
+            <Button
+                android:id="@+id/button2"
+                android:layout_width="121dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|center_horizontal"
+                android:onClick="flipButtonClick"
+                android:text="@string/flip" />
 
 </LinearLayout>

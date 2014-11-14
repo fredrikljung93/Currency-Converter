@@ -23,6 +23,8 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -69,6 +71,28 @@ public class MainActivity extends Activity {
 		this.toSpinner = (Spinner) findViewById(R.id.spinner2);
 
 		this.resultEditText = (EditText) findViewById(R.id.editText2);
+		
+		this.fromInput.addTextChangedListener(new TextWatcher() {
+			
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before, int count) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void beforeTextChanged(CharSequence s, int start, int count,
+					int after) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void afterTextChanged(Editable s) {
+				calculate();
+				
+			}
+		});
 		resultEditText.setOnLongClickListener(new OnLongClickListener() {
 
 			@Override
@@ -91,7 +115,7 @@ public class MainActivity extends Activity {
 			@Override
 			public void onItemSelected(AdapterView<?> parent, View view,
 					int position, long id) {
-				convertButtonClick(null);
+				calculate();
 
 			}
 
@@ -149,7 +173,7 @@ public class MainActivity extends Activity {
 		toSpinner.setAdapter(adapter);
 	}
 
-	public void convertButtonClick(View view) {
+	public void calculate() {
 		Currency from = (Currency) fromSpinner.getSelectedItem();
 		Currency to = (Currency) toSpinner.getSelectedItem();
 
@@ -167,7 +191,7 @@ public class MainActivity extends Activity {
 		fromInput.setText(resultEditText.getText());
 		fromSpinner.setSelection(toPosition);
 		toSpinner.setSelection(fromPosition);
-		convertButtonClick(view); // Trigger new conversion
+		calculate(); // Trigger new conversion
 	}
 
 	@Override
