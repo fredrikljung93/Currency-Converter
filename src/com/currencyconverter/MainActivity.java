@@ -1,7 +1,11 @@
 package com.currencyconverter;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -131,7 +135,7 @@ public class MainActivity extends Activity {
 		this.fromSpinner.setAdapter(adapter);
 		this.toSpinner.setAdapter(adapter);
 
-		File file = new File(getFilesDir(), "XML");
+		File file = new File(getFilesDir(), "currencies");
 		long daysSinceUpdate = (System.currentTimeMillis() - file
 				.lastModified()) / (1000 * 60 * 60 * 24);
 		Log.d("Hours since update", daysSinceUpdate + "");
@@ -146,15 +150,8 @@ public class MainActivity extends Activity {
 			downloadTask.execute();
 		} else {
 			Log.d("onStart", "Using old data");
-			try {
-				updateAdapters();
-			} catch (XmlPullParserException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+				ReadCurrencies task = new ReadCurrencies(new File(getFilesDir(),"currencies"));
+				task.execute();
 		}
 	}
 
@@ -165,10 +162,17 @@ public class MainActivity extends Activity {
 	}
 
 	public void updateAdapters() throws XmlPullParserException, IOException {
-		File file = new File(getFilesDir(), "XML");
-		List<Currency> spinnerArray = XMLParser.getCurrencies(file);
+		File xmlfile = new File(getCacheDir(), "XML");
+		File toFile = new File(getFilesDir(), "currencies");
+		List<Currency> spinnerArray = XMLParser.parseCurrencies(xmlfile,toFile);
 		adapter = new CurrencyAdapter(getApplicationContext(), spinnerArray);
 
+		fromSpinner.setAdapter(adapter);
+		toSpinner.setAdapter(adapter);
+	}
+	
+	public void updateAdapters(ArrayList<Currency> currencies) {
+		adapter = new CurrencyAdapter(getApplicationContext(), currencies);
 		fromSpinner.setAdapter(adapter);
 		toSpinner.setAdapter(adapter);
 	}
@@ -239,7 +243,7 @@ public class MainActivity extends Activity {
 				HttpURLConnection connection = (HttpURLConnection) url
 						.openConnection();
 				InputStream is = connection.getInputStream();
-				File file = new File(getFilesDir(), "XML");
+				File file = new File(getCacheDir(), "XML");
 				FileOutputStream fileOutput = new FileOutputStream(file);
 
 				int totalSize = connection.getContentLength();
@@ -292,4 +296,62 @@ public class MainActivity extends Activity {
 			}
 		}
 	}
+	
+	private class ReadCurrencies extends AsyncTask<Void, Void, Void> {
+		private File file;
+		private ArrayList<Currency> currencies;
+
+		public ReadCurrencies(File file) {
+			this.file=file;
+			this.currencies=new ArrayList<Currency>();
+
+		}
+
+		@Override
+		protected Void doInBackground(Void... params) {
+			Log.d("ReadCurrencies", "READ CURRENCIES IS RUNNING!");
+			BufferedReader reader=null;
+			try {
+				reader = new BufferedReader(new FileReader(file));
+				
+				
+				String line = reader.readLine();
+
+		        while (line != null) {
+		        	Log.d("READLINE", line);
+		        	String[] data = line.split("@");
+		        	Log.d("READLINE length", ""+data.length);
+		        	Log.d("READLINE 0", data[0]);
+		        	Log.d("READLINE 1", data[1]);
+		        	currencies.add(new Currency(data[0],Double.parseDouble(data[1])));
+		            line = reader.readLine();
+		        }
+				
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			finally{
+				try {
+					if(reader!=null){
+						reader.close();
+					}
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			return null;
+
+		}
+
+		@Override
+		protected void onPostExecute(Void result) {
+			updateAdapters(currencies);
+		}
+	}
+	
 }
