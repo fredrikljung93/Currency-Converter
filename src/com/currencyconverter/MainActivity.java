@@ -2,6 +2,7 @@ package com.currencyconverter;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -44,13 +45,17 @@ import android.view.View.OnLongClickListener;
 public class MainActivity extends Activity {
 
 	private static final String XMLURL = "http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml";
+
 	private Spinner fromSpinner;
 	private Spinner toSpinner;
 	private EditText fromInput;
 	private EditText resultEditText;
+
 	private ClipboardManager clipboard;
 	private DownloadXML downloadTask;
+
 	private CurrencyAdapter adapter;
+
 	private SharedPreferences sharedPrefs;
 
 	@Override
@@ -58,10 +63,20 @@ public class MainActivity extends Activity {
 		super.onStop();
 		// downloadTask.cancel(true);
 	}
+	
+	@Override
+	protected void onResume(){
+		super.onResume();
+		LinearLayout bgElement = (LinearLayout) findViewById(R.id.MyLinearLayout);
+		if(sharedPrefs.getString("choosebackground", "0").equals("1")){
+						bgElement.setBackgroundColor(Color.RED);
+					}
+		else{
+			bgElement.setBackgroundColor(Color.LTGRAY);
+			
+		}
+	}
 
-	/**
-	 * Creates Activity
-	 */
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -128,11 +143,6 @@ public class MainActivity extends Activity {
 
 			}
 		};
-		
-		if(sharedPrefs.getString("choosebackground", "0").equals("1")){
-			LinearLayout bgElement = (LinearLayout) findViewById(R.id.MyLinearLayout);
-			bgElement.setBackgroundColor(Color.RED);
-		}
 
 		this.fromSpinner.setOnItemSelectedListener(oisl);
 		this.toSpinner.setOnItemSelectedListener(oisl);
@@ -160,11 +170,12 @@ public class MainActivity extends Activity {
 		}
 	}
 
-	/**
-	 * Downloads XML data and parses it to persistent currencies file and fills spinners with data
-	 * @throws XmlPullParserException
-	 * @throws IOException
-	 */
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+	//	downloadTask.cancel(true);
+	}
+
 	public void updateAdapters() throws XmlPullParserException, IOException {
 		File xmlfile = new File(getCacheDir(), "XML");
 		File toFile = new File(getFilesDir(), "currencies");
@@ -175,19 +186,12 @@ public class MainActivity extends Activity {
 		toSpinner.setAdapter(adapter);
 	}
 	
-	/**
-	 * Fills adapeters with currencies
-	 * @param currencies
-	 */
 	public void updateAdapters(ArrayList<Currency> currencies) {
 		adapter = new CurrencyAdapter(getApplicationContext(), currencies);
 		fromSpinner.setAdapter(adapter);
 		toSpinner.setAdapter(adapter);
 	}
 
-	/**
-	 * Makes currency conversion and displays result
-	 */
 	public void calculate() {
 		Currency from = (Currency) fromSpinner.getSelectedItem();
 		Currency to = (Currency) toSpinner.getSelectedItem();
@@ -200,10 +204,6 @@ public class MainActivity extends Activity {
 			resultEditText.setText("");
 		}
 	}
-	/**
-	 * Flips currencies, where the TO Currency becomes the FROM currency and vice versa
-	 * @param view
-	 */
 	public void flipButtonClick(View view) {
 		int fromPosition = fromSpinner.getSelectedItemPosition();
 		int toPosition = toSpinner.getSelectedItemPosition();
@@ -213,9 +213,6 @@ public class MainActivity extends Activity {
 		calculate(); // Trigger new conversion
 	}
 
-	/**
-	 * Creates OptionsMenu
-	 */
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
@@ -223,22 +220,6 @@ public class MainActivity extends Activity {
 		return true;
 	}
 
-	
-	@Override
-	public void onResume(){
-		super.onResume();
-		if(sharedPrefs.getString("choosebackground", "0").equals("1")){
-			LinearLayout bgElement = (LinearLayout) findViewById(R.id.MyLinearLayout);
-			bgElement.setBackgroundColor(Color.RED);
-		}
-		else{
-			setContentView(R.layout.activity_main);
-		}
-	}
-	
-	/**
-	 * Handles OptionsMenu selections
-	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// Handle action bar item clicks here. The action bar will
@@ -257,10 +238,6 @@ public class MainActivity extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 
-	/**
-	 * AsyncTask to download XML and parse it to objects and save relevant data in file
-	 *
-	 */
 	private class DownloadXML extends AsyncTask<Void, Void, Void> {
 		private String urlstring;
 		private ArrayList<Currency> newCurrencies;
@@ -334,11 +311,7 @@ public class MainActivity extends Activity {
 			}
 		}
 	}
-	/**
-	 * Parses text file to Currency objects
-	 * @author Fredrik
-	 *
-	 */
+	
 	private class ReadCurrencies extends AsyncTask<Void, Void, Void> {
 		private File file;
 		private ArrayList<Currency> currencies;
