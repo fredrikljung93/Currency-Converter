@@ -16,4 +16,6 @@
     <string name="downloading">Downloading currencies</string>
      <string name="networkfailure">Network failure, using old data</string>
 	<string name="updatefrequencyinfo">Adjust how often to automatically update currency rates</string>
+	
+	
 </resources>

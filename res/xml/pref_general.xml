@@ -15,5 +15,12 @@
             android:summary="@string/updatefrequencyinfo"
             android:entryValues="@array/syncFrequencyValues"
             android:title="@string/updatefrequency"/>
+        
+         <ListPreference
+            android:key="choosebackground"
+            android:entries="@array/choosebackground"
+            android:summary="Välja bakgrund yo"
+            android:entryValues="@array/choosebackgroundValues"
+            android:title="Coolare bakgrundsfärg?"/>
 
 </PreferenceScreen>
