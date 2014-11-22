@@ -17,5 +17,11 @@
      <string name="networkfailure">Network failure, using old data</string>
 	<string name="updatefrequencyinfo">Adjust how often to automatically update currency rates</string>
 	
+	    <string name="choosebackground">Cooler background color</string>
+	<string name="choosebackgroundsummary">Set a cooler background color to impress your loved ones</string>
+	
+	<string name="yes">Yes</string>
+	<string name="no">No</string>
+	
 	
 </resources>

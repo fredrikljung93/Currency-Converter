@@ -19,8 +19,8 @@
          <ListPreference
             android:key="choosebackground"
             android:entries="@array/choosebackground"
-            android:summary="Välja bakgrund yo"
+            android:summary="@string/choosebackgroundsummary"
             android:entryValues="@array/choosebackgroundValues"
-            android:title="Coolare bakgrundsfärg?"/>
+            android:title="@string/choosebackground"/>
 
 </PreferenceScreen>

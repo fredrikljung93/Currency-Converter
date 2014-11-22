@@ -16,8 +16,8 @@
     </string-array>
     
        <string-array name="choosebackground">
-        <item name="1">Yes</item>
-        <item name="0">No</item>
+        <item name="1">@string/yes</item>
+        <item name="0">@string/no</item>
     </string-array>
      <string-array name="choosebackgroundValues">
         <item name="1">1</item>

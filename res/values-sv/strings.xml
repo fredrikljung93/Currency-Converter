@@ -16,5 +16,11 @@
     <string name="downloading">Laddar ned valutakurser</string>
          <string name="networkfailure">Nätverksfel, använder gammal data</string>
 	<string name="updatefrequencyinfo">Justera hur ofta valutakurser ska uppdateras</string>
+	
+		    <string name="choosebackground">Coolare bakgrundsfärg</string>
+	<string name="choosebackgroundsummary">Välj en coolare bakgrundsfärg för att imponera på dina nära och kära</string>
+	
+	<string name="yes">Ja</string>
+	<string name="no">Nej</string>
 
 </resources>
