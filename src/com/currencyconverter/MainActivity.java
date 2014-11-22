@@ -2,7 +2,6 @@ package com.currencyconverter;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -42,43 +41,89 @@ import android.widget.Spinner;
 import android.widget.Toast;
 import android.view.View.OnLongClickListener;
 
+/**
+ * The main activity for the Currency converter android application XML data for
+ * currencys quoted against euro (base currency) can be downloaded from
+ * http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml
+ * 
+ * This application uses this data to enable the user to convert between the
+ * different currencies
+ * 
+ * @author Fredrik Ljung
+ * 
+ */
 public class MainActivity extends Activity {
 
 	private static final String XMLURL = "http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml";
 
+	/**
+	 * Spinner with currency user wants to convert from
+	 */
 	private Spinner fromSpinner;
+
+	/**
+	 * Spinner with currency user wants to convert to
+	 */
 	private Spinner toSpinner;
+
+	/**
+	 * Display and allow user to change value of the currency the user wants to
+	 * convert from
+	 */
 	private EditText fromInput;
+
+	/**
+	 * Displays converted value
+	 */
 	private EditText resultEditText;
 
+	/**
+	 * Android clip board
+	 */
 	private ClipboardManager clipboard;
+
+	/**
+	 * AsyncTask to download XMl file
+	 */
 	private DownloadXML downloadTask;
 
+	/**
+	 * Spinner adapter containing all currencies and how to graphically
+	 * represent them
+	 */
 	private CurrencyAdapter adapter;
 
+	/**
+	 * Shared preferences
+	 */
 	private SharedPreferences sharedPrefs;
+
+	/**
+	 * Flag telling whether the activity has been destroyed or not.
+	 */
+	private boolean destroyed;
 
 	@Override
 	protected void onStop() {
 		super.onStop();
 		// downloadTask.cancel(true);
 	}
-	
+
 	@Override
-	protected void onResume(){
+	protected void onResume() {
 		super.onResume();
 		LinearLayout bgElement = (LinearLayout) findViewById(R.id.MyLinearLayout);
-		if(sharedPrefs.getString("choosebackground", "0").equals("1")){
-						bgElement.setBackgroundColor(Color.RED);
-					}
-		else{
+		if (sharedPrefs.getString("choosebackground", "0").equals("1")) {
+			bgElement.setBackgroundColor(Color.RED);
+		} else {
 			bgElement.setBackgroundColor(Color.LTGRAY);
-			
+
 		}
 	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		destroyed = false;
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
@@ -90,26 +135,27 @@ public class MainActivity extends Activity {
 		this.toSpinner = (Spinner) findViewById(R.id.spinner2);
 
 		this.resultEditText = (EditText) findViewById(R.id.editText2);
-		
+
 		this.fromInput.addTextChangedListener(new TextWatcher() {
-			
+
 			@Override
-			public void onTextChanged(CharSequence s, int start, int before, int count) {
+			public void onTextChanged(CharSequence s, int start, int before,
+					int count) {
 				// TODO Auto-generated method stub
-				
+
 			}
-			
+
 			@Override
 			public void beforeTextChanged(CharSequence s, int start, int count,
 					int after) {
 				// TODO Auto-generated method stub
-				
+
 			}
-			
+
 			@Override
 			public void afterTextChanged(Editable s) {
 				calculate();
-				
+
 			}
 		});
 		resultEditText.setOnLongClickListener(new OnLongClickListener() {
@@ -165,45 +211,69 @@ public class MainActivity extends Activity {
 			downloadTask.execute();
 		} else {
 			Log.d("onStart", "Using old data");
-				ReadCurrencies task = new ReadCurrencies(new File(getFilesDir(),"currencies"));
-				task.execute();
+			ReadCurrencies task = new ReadCurrencies(new File(getFilesDir(),
+					"currencies"));
+			task.execute();
 		}
 	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-	//	downloadTask.cancel(true);
+		destroyed = true;
 	}
 
+	/**
+	 * Updates adapters using downloaded XML stored in cacheDir
+	 * 
+	 * @throws XmlPullParserException
+	 * @throws IOException
+	 */
 	public void updateAdapters() throws XmlPullParserException, IOException {
 		File xmlfile = new File(getCacheDir(), "XML");
 		File toFile = new File(getFilesDir(), "currencies");
-		List<Currency> spinnerArray = XMLParser.parseCurrencies(xmlfile,toFile);
+		List<Currency> spinnerArray = XMLParser
+				.parseCurrencies(xmlfile, toFile);
 		adapter = new CurrencyAdapter(getApplicationContext(), spinnerArray);
 
 		fromSpinner.setAdapter(adapter);
 		toSpinner.setAdapter(adapter);
 	}
-	
+
+	/**
+	 * Updates adapter
+	 * 
+	 * @param currencies
+	 *            currencies sent to adapters
+	 */
 	public void updateAdapters(ArrayList<Currency> currencies) {
 		adapter = new CurrencyAdapter(getApplicationContext(), currencies);
 		fromSpinner.setAdapter(adapter);
 		toSpinner.setAdapter(adapter);
 	}
 
+	/**
+	 * Calculates currency conversion and displays result
+	 */
 	public void calculate() {
 		Currency from = (Currency) fromSpinner.getSelectedItem();
 		Currency to = (Currency) toSpinner.getSelectedItem();
 
 		try {
-			double fromInEURO = Double.parseDouble(fromInput.getText().toString())
-					/ from.getRate();
+			double fromInEURO = Double.parseDouble(fromInput.getText()
+					.toString()) / from.getRate();
 			resultEditText.setText(fromInEURO * to.getRate() + "");
 		} catch (NumberFormatException ne) {
 			resultEditText.setText("");
 		}
 	}
+
+	/**
+	 * Called when user clicks the flip button. Flips the TO and FROM currencies
+	 * with each other
+	 * 
+	 * @param view
+	 */
 	public void flipButtonClick(View view) {
 		int fromPosition = fromSpinner.getSelectedItemPosition();
 		int toPosition = toSpinner.getSelectedItemPosition();
@@ -238,10 +308,16 @@ public class MainActivity extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 
+	/**
+	 * AsyncTask to download XML data to cache dir
+	 * @author Fredrik
+	 *
+	 */
 	private class DownloadXML extends AsyncTask<Void, Void, Void> {
 		private String urlstring;
 		private ArrayList<Currency> newCurrencies;
 		private ProgressDialog progress;
+		private boolean success;
 
 		public DownloadXML(String urlstring) {
 			this.progress = new ProgressDialog(MainActivity.this);
@@ -249,6 +325,7 @@ public class MainActivity extends Activity {
 			progress.show();
 			this.urlstring = urlstring;
 			newCurrencies = new ArrayList<Currency>();
+			success = false;
 		}
 
 		@Override
@@ -258,8 +335,8 @@ public class MainActivity extends Activity {
 				HttpURLConnection connection = (HttpURLConnection) url
 						.openConnection();
 				InputStream is = connection.getInputStream();
-				File file = new File(getCacheDir(), "XML");
-				FileOutputStream fileOutput = new FileOutputStream(file);
+				File cacheFile = new File(getCacheDir(), "XML");
+				FileOutputStream fileOutput = new FileOutputStream(cacheFile);
 
 				int totalSize = connection.getContentLength();
 				int downloadedSize = 0;
@@ -267,14 +344,19 @@ public class MainActivity extends Activity {
 				int bufferLength = 0;
 
 				while ((bufferLength = is.read(buffer)) > 0) {
+					if (destroyed) { // Stop downloading and kill thread if
+										// application has been destroyed
+						fileOutput.close();
+						return null;
+					}
 					fileOutput.write(buffer, 0, bufferLength);
 					downloadedSize += bufferLength;
 					progress.setProgress(downloadedSize / totalSize);
 				}
 				fileOutput.close();
+				success = true;
 
 			} catch (MalformedURLException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IOException e) {
 				runOnUiThread(new Runnable() {
@@ -300,58 +382,63 @@ public class MainActivity extends Activity {
 			progress.dismiss();
 			Log.d("ONPOSTEXECUTE", "ONPOSTEXECUTE");
 			Log.d("XML", "Size: " + newCurrencies.size());
-			try {
-				updateAdapters();
-			} catch (XmlPullParserException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			if (success) {
+				try {
+					updateAdapters();
+				} catch (XmlPullParserException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
 	}
-	
+/**
+ * AsyncTask to read currencies from text file.
+ * @author Fredrik
+ *
+ */
 	private class ReadCurrencies extends AsyncTask<Void, Void, Void> {
 		private File file;
 		private ArrayList<Currency> currencies;
 
 		public ReadCurrencies(File file) {
-			this.file=file;
-			this.currencies=new ArrayList<Currency>();
+			this.file = file;
+			this.currencies = new ArrayList<Currency>();
 
 		}
 
 		@Override
 		protected Void doInBackground(Void... params) {
 			Log.d("ReadCurrencies", "READ CURRENCIES IS RUNNING!");
-			BufferedReader reader=null;
+			BufferedReader reader = null;
 			try {
 				reader = new BufferedReader(new FileReader(file));
-				
-				
+
 				String line = reader.readLine();
 
-		        while (line != null) {
-		        	Log.d("READLINE", line);
-		        	String[] data = line.split("@");
-		        	Log.d("READLINE length", ""+data.length);
-		        	Log.d("READLINE 0", data[0]);
-		        	Log.d("READLINE 1", data[1]);
-		        	currencies.add(new Currency(data[0],Double.parseDouble(data[1])));
-		            line = reader.readLine();
-		        }
-				
+				while (line != null) {
+					Log.d("READLINE", line);
+					String[] data = line.split("@");
+					Log.d("READLINE length", "" + data.length);
+					Log.d("READLINE 0", data[0]);
+					Log.d("READLINE 1", data[1]);
+					currencies.add(new Currency(data[0], Double
+							.parseDouble(data[1])));
+					line = reader.readLine();
+				}
+
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}
-			finally{
+			} finally {
 				try {
-					if(reader!=null){
+					if (reader != null) {
 						reader.close();
 					}
 				} catch (IOException e) {
@@ -368,5 +455,5 @@ public class MainActivity extends Activity {
 			updateAdapters(currencies);
 		}
 	}
-	
+
 }

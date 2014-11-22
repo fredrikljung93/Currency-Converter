@@ -5,6 +5,11 @@ import com.example.currencyconverter.R;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 
+/**
+ * Activity for letting the user set its preferences
+ * @author Fredrik
+ *
+ */
 public class SettingsActivity extends PreferenceActivity 
 {
              
