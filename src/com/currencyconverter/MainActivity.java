@@ -86,6 +86,11 @@ public class MainActivity extends Activity {
 	 * AsyncTask to download XMl file
 	 */
 	private DownloadXML downloadTask;
+	
+	/**
+	 * AsyncTask to parse downloaded currency data
+	 */
+	private ReadCurrencies readCurrenciesTask;
 
 	/**
 	 * Spinner adapter containing all currencies and how to graphically
@@ -97,11 +102,6 @@ public class MainActivity extends Activity {
 	 * Shared preferences
 	 */
 	private SharedPreferences sharedPrefs;
-
-	/**
-	 * Flag telling whether the activity has been destroyed or not.
-	 */
-	private boolean destroyed;
 
 	@Override
 	protected void onStop() {
@@ -123,7 +123,6 @@ public class MainActivity extends Activity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		destroyed = false;
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
@@ -211,16 +210,17 @@ public class MainActivity extends Activity {
 			downloadTask.execute();
 		} else {
 			Log.d("onStart", "Using old data");
-			ReadCurrencies task = new ReadCurrencies(new File(getFilesDir(),
+		readCurrenciesTask = new ReadCurrencies(new File(getFilesDir(),
 					"currencies"));
-			task.execute();
+			readCurrenciesTask.execute();
 		}
 	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		destroyed = true;
+		downloadTask.cancel(true);
+		
 	}
 
 	/**
@@ -310,14 +310,14 @@ public class MainActivity extends Activity {
 
 	/**
 	 * AsyncTask to download XML data to cache dir
+	 * 
 	 * @author Fredrik
-	 *
+	 * 
 	 */
-	private class DownloadXML extends AsyncTask<Void, Void, Void> {
+	private class DownloadXML extends AsyncTask<Void, Void, String> {
 		private String urlstring;
 		private ArrayList<Currency> newCurrencies;
 		private ProgressDialog progress;
-		private boolean success;
 
 		public DownloadXML(String urlstring) {
 			this.progress = new ProgressDialog(MainActivity.this);
@@ -325,19 +325,20 @@ public class MainActivity extends Activity {
 			progress.show();
 			this.urlstring = urlstring;
 			newCurrencies = new ArrayList<Currency>();
-			success = false;
 		}
 
+		@SuppressWarnings("finally")
 		@Override
-		protected Void doInBackground(Void... params) {
-			InputStream is=null;
+		protected String doInBackground(Void... params) {
+			InputStream is = null;
+			FileOutputStream fileOutput = null;
 			try {
 				URL url = new URL(urlstring);
 				HttpURLConnection connection = (HttpURLConnection) url
 						.openConnection();
 				is = connection.getInputStream();
 				File cacheFile = new File(getCacheDir(), "XML");
-				FileOutputStream fileOutput = new FileOutputStream(cacheFile);
+				fileOutput = new FileOutputStream(cacheFile);
 
 				int totalSize = connection.getContentLength();
 				int downloadedSize = 0;
@@ -345,8 +346,8 @@ public class MainActivity extends Activity {
 				int bufferLength = 0;
 
 				while ((bufferLength = is.read(buffer)) > 0) {
-					if (destroyed) { // Stop downloading and kill thread if
-										// application has been destroyed
+					if (isCancelled()) { // Stop downloading and kill thread if
+											// application has been destroyed
 						is.close();
 						fileOutput.close();
 						return null;
@@ -356,26 +357,26 @@ public class MainActivity extends Activity {
 					progress.setProgress(downloadedSize / totalSize);
 				}
 				fileOutput.close();
-				success = true;
 
 			} catch (MalformedURLException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
-				runOnUiThread(new Runnable() {
-
-					@Override
-					public void run() {
-						Toast.makeText(
-								MainActivity.this.getApplicationContext(),
-								R.string.networkfailure, Toast.LENGTH_LONG)
-								.show();
-
+				try {
+					if (is != null) {
+						is.close();
 					}
-				});
-
+					if (fileOutput != null) {
+						fileOutput.close();
+					}
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} finally {
+					return "NETWORKFAILURE";
+				}
 			}
 			Log.d("ASYNCTASK DONE", "ASYNCTASK DONE");
-			if(is!=null){
+			if (is != null) {
 				try {
 					is.close();
 				} catch (IOException e) {
@@ -383,33 +384,44 @@ public class MainActivity extends Activity {
 					e.printStackTrace();
 				}
 			}
-			return null;
+			return "SUCCESS";
 
 		}
 
 		@Override
-		protected void onPostExecute(Void result) {
+		protected void onPostExecute(String result) {
 			progress.dismiss();
+			if (result.equalsIgnoreCase("NETWORKFAILURE")) {
+				Toast.makeText(MainActivity.this.getApplicationContext(),
+						R.string.networkfailure, Toast.LENGTH_LONG).show();
+			}
 			Log.d("ONPOSTEXECUTE", "ONPOSTEXECUTE");
 			Log.d("XML", "Size: " + newCurrencies.size());
-			if (success) {
-				try {
-					updateAdapters();
-				} catch (XmlPullParserException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+			try {
+				updateAdapters();
+			} catch (XmlPullParserException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+		@Override
+		protected void onCancelled(String result) {
+			if (progress != null) {
+				progress.dismiss();
 			}
 		}
 	}
-/**
- * AsyncTask to read currencies from text file.
- * @author Fredrik
- *
- */
+
+	/**
+	 * AsyncTask to read currencies from text file.
+	 * 
+	 * @author Fredrik
+	 * 
+	 */
 	private class ReadCurrencies extends AsyncTask<Void, Void, Void> {
 		private File file;
 		private ArrayList<Currency> currencies;
@@ -430,6 +442,17 @@ public class MainActivity extends Activity {
 				String line = reader.readLine();
 
 				while (line != null) {
+					if(isCancelled()){
+						try {
+							if (reader != null) {
+								reader.close();
+							}
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						return null;
+					}
 					Log.d("READLINE", line);
 					String[] data = line.split("@");
 					Log.d("READLINE length", "" + data.length);
