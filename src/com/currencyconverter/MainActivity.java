@@ -330,11 +330,12 @@ public class MainActivity extends Activity {
 
 		@Override
 		protected Void doInBackground(Void... params) {
+			InputStream is=null;
 			try {
 				URL url = new URL(urlstring);
 				HttpURLConnection connection = (HttpURLConnection) url
 						.openConnection();
-				InputStream is = connection.getInputStream();
+				is = connection.getInputStream();
 				File cacheFile = new File(getCacheDir(), "XML");
 				FileOutputStream fileOutput = new FileOutputStream(cacheFile);
 
@@ -346,6 +347,7 @@ public class MainActivity extends Activity {
 				while ((bufferLength = is.read(buffer)) > 0) {
 					if (destroyed) { // Stop downloading and kill thread if
 										// application has been destroyed
+						is.close();
 						fileOutput.close();
 						return null;
 					}
@@ -373,6 +375,14 @@ public class MainActivity extends Activity {
 
 			}
 			Log.d("ASYNCTASK DONE", "ASYNCTASK DONE");
+			if(is!=null){
+				try {
+					is.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 			return null;
 
 		}
