@@ -43,7 +43,7 @@ import android.view.View.OnLongClickListener;
 
 /**
  * The main activity for the Currency converter android application XML data for
- * currencys quoted against euro (base currency) can be downloaded from
+ * currencies quoted against euro (base currency) can be downloaded from
  * http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml
  * 
  * This application uses this data to enable the user to convert between the
@@ -56,6 +56,7 @@ public class MainActivity extends Activity {
 
 	private static final String XMLURL = "http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml";
 
+	private static enum Result{SUCCESS,NETWORKFAILURE,ERROR,CANCELLED}
 	/**
 	 * Spinner with currency user wants to convert from
 	 */
@@ -102,13 +103,8 @@ public class MainActivity extends Activity {
 	 * Shared preferences
 	 */
 	private SharedPreferences sharedPrefs;
-
-	@Override
-	protected void onStop() {
-		super.onStop();
-		// downloadTask.cancel(true);
-	}
-
+	
+	
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -220,6 +216,7 @@ public class MainActivity extends Activity {
 	public void onDestroy() {
 		super.onDestroy();
 		downloadTask.cancel(true);
+		readCurrenciesTask.cancel(true);
 		
 	}
 
@@ -314,7 +311,7 @@ public class MainActivity extends Activity {
 	 * @author Fredrik
 	 * 
 	 */
-	private class DownloadXML extends AsyncTask<Void, Void, String> {
+	private class DownloadXML extends AsyncTask<Void, Void, Result> {
 		private String urlstring;
 		private ArrayList<Currency> newCurrencies;
 		private ProgressDialog progress;
@@ -329,7 +326,7 @@ public class MainActivity extends Activity {
 
 		@SuppressWarnings("finally")
 		@Override
-		protected String doInBackground(Void... params) {
+		protected Result doInBackground(Void... params) {
 			InputStream is = null;
 			FileOutputStream fileOutput = null;
 			try {
@@ -350,7 +347,7 @@ public class MainActivity extends Activity {
 											// application has been destroyed
 						is.close();
 						fileOutput.close();
-						return null;
+						return Result.CANCELLED;
 					}
 					fileOutput.write(buffer, 0, bufferLength);
 					downloadedSize += bufferLength;
@@ -372,7 +369,7 @@ public class MainActivity extends Activity {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				} finally {
-					return "NETWORKFAILURE";
+					return Result.NETWORKFAILURE;
 				}
 			}
 			Log.d("ASYNCTASK DONE", "ASYNCTASK DONE");
@@ -384,14 +381,14 @@ public class MainActivity extends Activity {
 					e.printStackTrace();
 				}
 			}
-			return "SUCCESS";
+			return Result.SUCCESS;
 
 		}
 
 		@Override
-		protected void onPostExecute(String result) {
+		protected void onPostExecute(Result result) {
 			progress.dismiss();
-			if (result.equalsIgnoreCase("NETWORKFAILURE")) {
+			if (result==Result.NETWORKFAILURE) {
 				Toast.makeText(MainActivity.this.getApplicationContext(),
 						R.string.networkfailure, Toast.LENGTH_LONG).show();
 			}
@@ -407,13 +404,6 @@ public class MainActivity extends Activity {
 				e.printStackTrace();
 			}
 		}
-
-		@Override
-		protected void onCancelled(String result) {
-			if (progress != null) {
-				progress.dismiss();
-			}
-		}
 	}
 
 	/**
@@ -422,7 +412,7 @@ public class MainActivity extends Activity {
 	 * @author Fredrik
 	 * 
 	 */
-	private class ReadCurrencies extends AsyncTask<Void, Void, Void> {
+	private class ReadCurrencies extends AsyncTask<Void, Void, Result> {
 		private File file;
 		private ArrayList<Currency> currencies;
 
@@ -433,7 +423,7 @@ public class MainActivity extends Activity {
 		}
 
 		@Override
-		protected Void doInBackground(Void... params) {
+		protected Result doInBackground(Void... params) {
 			Log.d("ReadCurrencies", "READ CURRENCIES IS RUNNING!");
 			BufferedReader reader = null;
 			try {
@@ -451,7 +441,7 @@ public class MainActivity extends Activity {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
-						return null;
+						return Result.CANCELLED;
 					}
 					Log.d("READLINE", line);
 					String[] data = line.split("@");
@@ -479,12 +469,12 @@ public class MainActivity extends Activity {
 					e.printStackTrace();
 				}
 			}
-			return null;
+			return Result.SUCCESS;
 
 		}
 
 		@Override
-		protected void onPostExecute(Void result) {
+		protected void onPostExecute(Result result) {
 			updateAdapters(currencies);
 		}
 	}
